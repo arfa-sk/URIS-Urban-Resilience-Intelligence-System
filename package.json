@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "node scripts/copy-server-for-vercel.cjs && vite build",
+    "build": "node scripts/bundle-api.cjs && vite build",
     "preview": "vite preview",
     "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
     "lint": "tsc --noEmit"
@@ -33,6 +33,7 @@
     "@types/leaflet": "^1.9.21",
     "@types/node": "^22.14.0",
     "autoprefixer": "^10.4.21",
+    "esbuild": "^0.24.2",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",

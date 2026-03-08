@@ -2,7 +2,7 @@
  * Single Vercel serverless handler for ALL /api/* routes.
  * Vercel rewrites /api/signals/live etc. to /api?__path=/signals/live&... so we restore req.url and pass to Express.
  */
-import app from "./server";
+import app from "./handler.js";
 
 export default function handler(req: import("http").IncomingMessage, res: import("http").ServerResponse): void {
   let pathAndQuery = req.url || "/";
