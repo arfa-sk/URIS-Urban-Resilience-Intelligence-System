@@ -1,6 +1,6 @@
 # URIS — Urban Resilience Intelligence System
 
-![URIS Dashboard](hackathon-2-by-google-ai-studio/✅ (1).png)
+![URIS Dashboard](dashboard.png)
 A dashboard for monitoring urban resilience across Pakistani cities (Karachi, Lahore, Islamabad). View risk by district, run AI-powered analysis, see live signals (jobs, property, news), system alerts, risk trends, and cascading failure simulation.
 
 ## Features
