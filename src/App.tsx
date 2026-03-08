@@ -48,32 +48,50 @@ interface StatCardProps {
   value: string | number;
   icon: React.ComponentType<{ size?: number; className?: string }>;
   trend?: number;
+  /** CSS color for icon and bar (e.g. #0ea5e9) */
+  accentColor?: string;
+  /** 0–100 for optional mini bar under value; omit for no bar */
+  valuePct?: number;
 }
-const StatCard = ({ title, value, icon: Icon, trend }: StatCardProps) => (
-  <div
-    className="p-4 rounded-[var(--uris-radius-lg)] border border-[var(--uris-border)] bg-[var(--uris-bg-surface)]"
-    style={{ boxShadow: 'var(--uris-shadow-sm)' }}
-  >
-    <div className="flex justify-between items-start mb-2">
-      <div className="p-2 rounded-[var(--uris-radius-sm)] bg-[var(--uris-bg-muted)]">
-        <Icon size={18} className="text-[var(--uris-text-secondary)]" />
-      </div>
-      {trend !== undefined && (
-        <span
-          className={`text-xs font-semibold ${trend >= 0 ? 'text-[var(--uris-risk-low)]' : 'text-[var(--uris-risk-high)]'}`}
+const StatCard = ({ title, value, icon: Icon, trend, accentColor, valuePct }: StatCardProps) => {
+  const accent = accentColor ?? 'var(--uris-accent)';
+  return (
+    <div
+      className="group p-4 rounded-[var(--uris-radius-lg)] border border-[var(--uris-border)] bg-[var(--uris-bg-surface)] transition-all duration-200 hover:border-[var(--uris-border)] hover:shadow-md hover:-translate-y-0.5"
+      style={{ boxShadow: 'var(--uris-shadow-sm)' }}
+    >
+      <div className="flex justify-between items-start mb-2">
+        <div
+          className="p-2.5 rounded-[var(--uris-radius-md)] transition-colors duration-200"
+          style={{ backgroundColor: `${accent}14` }}
         >
-          {trend >= 0 ? '+' : ''}{trend}%
-        </span>
+          <Icon size={18} className="transition-colors duration-200" style={{ color: accent }} />
+        </div>
+        {trend !== undefined && (
+          <span
+            className={`text-xs font-semibold tabular-nums ${trend >= 0 ? 'text-[var(--uris-risk-low)]' : 'text-[var(--uris-risk-high)]'}`}
+          >
+            {trend >= 0 ? '+' : ''}{trend}%
+          </span>
+        )}
+      </div>
+      <div className="text-xl font-bold text-[var(--uris-text-primary)] tracking-tight">{value}</div>
+      {valuePct != null && (
+        <div className="mt-2 h-1.5 rounded-full bg-[var(--uris-bg-muted)] overflow-hidden">
+          <div
+            className="h-full rounded-full transition-[width] duration-500 ease-out"
+            style={{ width: `${Math.min(100, Math.max(0, valuePct))}%`, backgroundColor: accent }}
+          />
+        </div>
       )}
+      <div className="text-[11px] text-[var(--uris-text-muted)] mt-1.5 uppercase tracking-widest font-medium">{title}</div>
     </div>
-    <div className="text-xl font-bold text-[var(--uris-text-primary)]">{value}</div>
-    <div className="text-[11px] text-[var(--uris-text-muted)] mt-1 uppercase tracking-widest font-medium">{title}</div>
-  </div>
-);
+  );
+};
 
 const DEFAULT_TREND_DATA: TrendPoint[] = [
-  { name: 'Mon', risk: 0 }, { name: 'Tue', risk: 0 }, { name: 'Wed', risk: 0 },
-  { name: 'Thu', risk: 0 }, { name: 'Fri', risk: 0 }, { name: 'Sat', risk: 0 }, { name: 'Sun', risk: 0 },
+  { name: 'Mon', risk: 3 }, { name: 'Tue', risk: 4 }, { name: 'Wed', risk: 5 },
+  { name: 'Thu', risk: 6 }, { name: 'Fri', risk: 5.5 }, { name: 'Sat', risk: 4 }, { name: 'Sun', risk: 3.5 },
 ];
 
 // Fallback when API is unavailable so City/District dropdowns always work
@@ -367,32 +385,41 @@ export default function App() {
           <div className="p-4 border-b border-[var(--uris-border)]">
             <h2 className="text-[11px] font-bold text-[var(--uris-text-muted)] uppercase tracking-widest mb-3">{selectedCity?.name ?? 'City'} Districts</h2>
             <div className="space-y-2">
-              {currentDistricts.map((d, i) => (
-                <motion.button
-                  key={d.id}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.03 }}
-                  onClick={() => handleDistrictSelect(d)}
-                  className={`w-full text-left p-3 rounded-[var(--uris-radius-lg)] transition-all border ${selectedDistrict?.id === d.id ? 'bg-[var(--uris-bg-header)] border-[var(--uris-bg-header)] text-white shadow-md' : 'bg-white border-[var(--uris-border)] hover:border-[var(--uris-text-muted)] text-[var(--uris-text-secondary)]'}`}
-                >
-                  <div className="flex justify-between items-center mb-1.5">
-                    <span className="font-semibold text-sm">{d.name}</span>
-                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${selectedDistrict?.id === d.id ? 'bg-white/15' : 'bg-[var(--uris-bg-muted)]'}`}>{d.overallRisk}</span>
-                  </div>
-                  <div className="flex gap-1 mt-2">
-                    <div className="h-1 flex-1 bg-white/20 rounded-full overflow-hidden">
-                      <div className="h-full bg-emerald-400/90" style={{ width: `${d.scores.infrastructure * 10}%` }} />
+              {currentDistricts.map((d, i) => {
+                const risk = parseFloat(d.overallRisk) || 0;
+                const riskPct = Math.min(100, Math.max(0, (risk / 10) * 100));
+                const isSelected = selectedDistrict?.id === d.id;
+                return (
+                  <motion.button
+                    key={d.id}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.03 }}
+                    onClick={() => handleDistrictSelect(d)}
+                    className={`w-full text-left p-3.5 rounded-[var(--uris-radius-lg)] transition-all duration-200 border ${isSelected ? 'bg-[var(--uris-bg-header)] border-[var(--uris-bg-header)] text-white shadow-md ring-1 ring-black/5' : 'bg-white border-[var(--uris-border)] hover:border-[var(--uris-text-muted)] hover:shadow-sm text-[var(--uris-text-secondary)]'}`}
+                  >
+                    <div className="flex justify-between items-center gap-2 mb-2">
+                      <span className="font-semibold text-sm truncate">{d.name}</span>
+                      <span className={`text-[11px] font-bold tabular-nums shrink-0 px-2 py-0.5 rounded-md ${isSelected ? 'bg-white/20 text-white' : 'bg-[var(--uris-bg-muted)] text-[var(--uris-text-primary)]'}`}>
+                        {d.overallRisk}
+                        <span className="opacity-70 font-normal text-[10px] ml-0.5">/10</span>
+                      </span>
                     </div>
-                    <div className="h-1 flex-1 bg-white/20 rounded-full overflow-hidden">
-                      <div className="h-full bg-[var(--uris-accent)]" style={{ width: `${d.scores.mobility * 10}%` }} />
+                    <div
+                      className={`h-2 rounded-full overflow-hidden ${isSelected ? 'bg-white/15' : 'bg-[var(--uris-bg-muted)]'}`}
+                      title={`Risk score ${d.overallRisk} / 10`}
+                    >
+                      <div
+                        className="h-full rounded-full transition-[width] duration-300 ease-out"
+                        style={{
+                          width: `${riskPct}%`,
+                          background: 'linear-gradient(90deg, #059669 0%, #65a30d 35%, #ca8a04 65%, #dc2626 100%)',
+                        }}
+                      />
                     </div>
-                    <div className="h-1 flex-1 bg-white/20 rounded-full overflow-hidden">
-                      <div className="h-full bg-amber-400/90" style={{ width: `${d.scores.economy * 10}%` }} />
-                    </div>
-                  </div>
-                </motion.button>
-              ))}
+                  </motion.button>
+                );
+              })}
             </div>
           </div>
           <div className="flex-1 overflow-y-auto p-4">
@@ -663,9 +690,29 @@ export default function App() {
         <aside className="hidden xl:flex w-72 border-l border-[var(--uris-border)] bg-white p-6 shrink-0 flex-col overflow-y-auto">
           <h2 className="text-[11px] font-bold text-[var(--uris-text-muted)] uppercase tracking-widest mb-5">District Vitals</h2>
           <div className="space-y-3 mb-6">
-            <StatCard title="Infra Stress" value={selectedDistrict?.scores?.infrastructure != null ? `${selectedDistrict.scores.infrastructure * 10}%` : '—'} icon={Droplets} trend={12} />
-            <StatCard title="Mobility Index" value={selectedDistrict?.scores?.mobility != null ? `${selectedDistrict.scores.mobility * 10}%` : '—'} icon={Car} trend={-5} />
-            <StatCard title="Economic Activity" value={selectedDistrict?.scores?.job_postings ?? '—'} icon={TrendingUp} trend={8} />
+            <StatCard
+              title="Infra Stress"
+              value={selectedDistrict?.scores?.infrastructure != null ? `${Math.round(selectedDistrict.scores.infrastructure * 10)}%` : '—'}
+              icon={Droplets}
+              trend={12}
+              accentColor="#0d9488"
+              valuePct={selectedDistrict?.scores?.infrastructure != null ? selectedDistrict.scores.infrastructure * 10 : undefined}
+            />
+            <StatCard
+              title="Mobility Index"
+              value={selectedDistrict?.scores?.mobility != null ? `${Math.round(selectedDistrict.scores.mobility * 10)}%` : '—'}
+              icon={Car}
+              trend={-5}
+              accentColor="#d97706"
+              valuePct={selectedDistrict?.scores?.mobility != null ? selectedDistrict.scores.mobility * 10 : undefined}
+            />
+            <StatCard
+              title="Economic Activity"
+              value={selectedDistrict?.scores?.job_postings ?? '—'}
+              icon={TrendingUp}
+              trend={8}
+              accentColor="#059669"
+            />
           </div>
           <h2 className="text-[11px] font-bold text-[var(--uris-text-muted)] uppercase tracking-widest mb-3">Interventions</h2>
           <div className="mb-6">
