@@ -1,0 +1,5 @@
+{
+  "name": "URIS — Urban Resilience Intelligence System",
+  "description": "AI-powered urban intelligence platform for Karachi that predicts and prevents urban crises through multi-system signal analysis.",
+  "requestFramePermissions": ["geolocation"]
+}

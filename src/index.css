@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+:root {
+  --uris-bg-base: #f1f5f9;
+  --uris-bg-surface: #ffffff;
+  --uris-bg-header: #0f172a;
+  --uris-bg-muted: #f8fafc;
+  --uris-text-primary: #0f172a;
+  --uris-text-secondary: #475569;
+  --uris-text-muted: #64748b;
+  --uris-border: #e2e8f0;
+  --uris-border-subtle: #f1f5f9;
+  --uris-accent: #0d9488;
+  --uris-accent-hover: #0f766e;
+  --uris-accent-muted: #ccfbf1;
+  --uris-risk-high: #b91c1c;
+  --uris-risk-high-bg: #fef2f2;
+  --uris-risk-medium: #b45309;
+  --uris-risk-medium-bg: #fffbeb;
+  --uris-risk-low: #047857;
+  --uris-risk-low-bg: #ecfdf5;
+  --uris-chart-stroke: #0d9488;
+  --uris-shadow-card: 0 1px 3px rgba(0,0,0,0.06);
+  --uris-shadow-card-hover: 0 10px 40px -10px rgba(0,0,0,0.12);
+  --uris-radius: 12px;
+  --uris-radius-sm: 6px;
+  --uris-radius-md: 12px;
+  --uris-radius-lg: 16px;
+  --uris-shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.leaflet-container {
+  background: var(--uris-bg-muted) !important;
+  font-family: var(--font-sans);
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: var(--uris-radius);
+  box-shadow: var(--uris-shadow-card);
+  border: 1px solid var(--uris-border);
+}
+
+.markdown-body { font-size: 0.875rem; line-height: 1.6; }
+.markdown-body p { margin-bottom: 0.75rem; }
+.markdown-body ul { list-style-type: disc; padding-left: 1.25rem; margin-bottom: 0.75rem; }
+
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line { stroke: var(--uris-border-subtle); }
