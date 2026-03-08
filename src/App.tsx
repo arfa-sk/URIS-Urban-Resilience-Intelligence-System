@@ -94,6 +94,13 @@ const DEFAULT_TREND_DATA: TrendPoint[] = [
   { name: 'Thu', risk: 6 }, { name: 'Fri', risk: 5.5 }, { name: 'Sat', risk: 4 }, { name: 'Sun', risk: 3.5 },
 ];
 
+const FALLBACK_LIVE_SIGNALS: LiveSignals = {
+  jobs: [{ title: 'Sample role', company: '—', location: '—', source: 'Sample' }],
+  property: [{ address: 'Sample listing', price: '—', trend: '—', source: 'Sample' }],
+  news: [{ title: 'Sample headline', sentiment: 'neutral', source: 'Sample' }],
+  lastUpdated: Date.now(),
+};
+
 // Fallback when API is unavailable so City/District dropdowns always work
 const FALLBACK_CITIES: City[] = [
   { id: 'karachi', name: 'Karachi', lat: 24.8607, lng: 67.0011 },
@@ -241,10 +248,14 @@ export default function App() {
     setLiveSignals(null);
     setLiveSignalsError(null);
     getLiveSignals(selectedCityId)
-      .then((s) => setLiveSignals(s))
+      .then((s) => {
+        setLiveSignals(s);
+        setLiveSignalsError(null);
+      })
       .catch((e) => {
         const msg = e instanceof Error ? e.message : "Live signals unavailable";
-        setLiveSignalsError(msg.includes("fetch") || msg.includes("Failed") ? "Live signals unavailable. Ensure the backend is deployed and reachable." : msg);
+        setLiveSignalsError(msg.includes("fetch") || msg.includes("Failed") ? "Showing sample data (API unreachable)." : msg);
+        setLiveSignals(FALLBACK_LIVE_SIGNALS);
       });
     getAlerts(selectedCityId)
       .then((a) => setAlerts(a))
@@ -281,8 +292,10 @@ export default function App() {
     try {
       const s = await getLiveSignals(selectedCityId);
       setLiveSignals(s);
+      setLiveSignalsError(null);
     } catch (err) {
-      setLiveSignalsError(err instanceof Error ? err.message : "Failed to fetch live signals");
+      setLiveSignalsError(err instanceof Error ? err.message : "Showing sample data (API unreachable).");
+      setLiveSignals(FALLBACK_LIVE_SIGNALS);
     } finally {
       setLiveSignalsLoading(false);
     }

@@ -19,7 +19,7 @@ export async function getCities(): Promise<City[]> {
 
 export async function getDistricts(cityId: string): Promise<DistrictWithScores[]> {
   const normalized = cityId.trim().toLowerCase();
-  const url = `/api/districts?city=${encodeURIComponent(normalized)}`;
+  const url = `${API_BASE}/api/districts?city=${encodeURIComponent(normalized)}`;
   const response = await fetch(url, {
     cache: "no-store",
     headers: { Pragma: "no-cache", "Cache-Control": "no-cache" },
