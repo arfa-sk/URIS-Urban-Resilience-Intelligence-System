@@ -6,6 +6,12 @@
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
+html, body { overflow-x: hidden; }
+body { min-height: 100dvh; }
+@supports (padding: env(safe-area-inset-top)) {
+  body { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+}
+
 :root {
   --uris-bg-base: #f1f5f9;
   --uris-bg-surface: #ffffff;
@@ -52,3 +58,8 @@
 
 .recharts-cartesian-grid-horizontal line,
 .recharts-cartesian-grid-vertical line { stroke: var(--uris-border-subtle); }
+
+/* Mobile/tablet: smooth scroll and prevent horizontal drag */
+@media (max-width: 767px) {
+  .overflow-y-auto { -webkit-overflow-scrolling: touch; }
+}

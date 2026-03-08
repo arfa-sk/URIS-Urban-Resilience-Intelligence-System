@@ -13,7 +13,8 @@ import {
   Wind,
   Droplets,
   Car,
-  MapPin
+  MapPin,
+  PanelRightClose
 } from 'lucide-react';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
@@ -148,7 +149,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
   const [view, setView] = useState<'map' | 'twin'>('map');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showSimulator, setShowSimulator] = useState(false);
   const [simulating, setSimulating] = useState(false);
   const [simResult, setSimResult] = useState<{ steps: SimulatorStep[] } | null>(null);
@@ -157,6 +158,7 @@ export default function App() {
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [liveSignalsError, setLiveSignalsError] = useState<string | null>(null);
   const [liveSignalsLoading, setLiveSignalsLoading] = useState(false);
+  const [isVitalsOpen, setIsVitalsOpen] = useState(false);
 
   const runSimulation = async () => {
     if (!selectedDistrict) return;
@@ -325,20 +327,20 @@ export default function App() {
 
   return (
     <div className="h-screen flex flex-col bg-[var(--uris-bg-base)] text-[var(--uris-text-primary)] font-sans overflow-hidden">
-      <header className="h-14 border-b border-white/10 bg-[var(--uris-bg-header)] px-6 flex items-center justify-between shrink-0 z-10 flex-wrap gap-2">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-[var(--uris-accent)] flex items-center justify-center">
+      <header className="min-h-14 py-2 border-b border-white/10 bg-[var(--uris-bg-header)] px-3 sm:px-4 md:px-6 flex items-center justify-between shrink-0 z-10 flex-wrap gap-2 sm:gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="w-9 h-9 rounded-lg bg-[var(--uris-accent)] flex items-center justify-center shrink-0">
             <Activity size={18} className="text-white" />
           </div>
-          <div>
-            <h1 className="text-lg font-bold tracking-tight text-white">URIS</h1>
-            <p className="text-[10px] text-white/60 uppercase tracking-widest leading-none">Urban Resilience Intelligence</p>
+          <div className="min-w-0">
+            <h1 className="text-base sm:text-lg font-bold tracking-tight text-white truncate">URIS</h1>
+            <p className="text-[10px] text-white/60 uppercase tracking-widest leading-none hidden sm:block">Urban Resilience Intelligence</p>
           </div>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <label htmlFor="uris-city-select" className="text-[10px] font-semibold text-white/70 uppercase tracking-wider">City</label>
-            <div className="relative">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4 order-last w-full sm:order-none sm:w-auto sm:flex-1 sm:justify-center">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <label htmlFor="uris-city-select" className="text-[10px] font-semibold text-white/70 uppercase tracking-wider shrink-0">City</label>
+            <div className="relative min-w-0 flex-1 sm:flex-none">
               <select
                 id="uris-city-select"
                 value={selectedCityId}
@@ -346,7 +348,7 @@ export default function App() {
                   setSelectedCityId(e.target.value);
                   setSelectedDistrict(null);
                 }}
-                className="bg-white/15 border border-white/30 text-white rounded-lg pl-3 pr-8 py-2 text-sm font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 min-w-[140px] appearance-none"
+                className="w-full sm:w-auto min-w-0 bg-white/15 border border-white/30 text-white rounded-lg pl-2.5 sm:pl-3 pr-7 sm:pr-8 py-2 text-xs sm:text-sm font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 sm:min-w-[120px] md:min-w-[140px] appearance-none max-w-[140px] sm:max-w-none"
                 aria-label="Select city"
               >
                 <option value="" className="text-[var(--uris-bg-header)] bg-white">Select city</option>
@@ -354,12 +356,12 @@ export default function App() {
                   <option key={c.id} value={c.id} className="text-[var(--uris-bg-header)] bg-white">{c.name}</option>
                 ))}
               </select>
-              <ChevronDown size={18} className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-white/80" />
+              <ChevronDown size={16} className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-white/80 sm:w-[18px] sm:h-[18px]" />
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <label htmlFor="uris-district-select" className="text-[10px] font-semibold text-white/70 uppercase tracking-wider">District</label>
-            <div className="relative">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <label htmlFor="uris-district-select" className="text-[10px] font-semibold text-white/70 uppercase tracking-wider shrink-0">District</label>
+            <div className="relative min-w-0 flex-1 sm:flex-none">
               <select
                 id="uris-district-select"
                 value={selectedDistrict?.cityId === selectedCityId ? (selectedDistrict?.id ?? '') : ''}
@@ -367,7 +369,7 @@ export default function App() {
                   const d = currentDistricts.find((x) => x.id === e.target.value);
                   if (d) handleDistrictSelect(d);
                 }}
-                className="bg-white/15 border border-white/30 text-white rounded-lg pl-3 pr-8 py-2 text-sm font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 min-w-[180px] appearance-none"
+                className="w-full sm:w-auto min-w-0 bg-white/15 border border-white/30 text-white rounded-lg pl-2.5 sm:pl-3 pr-7 sm:pr-8 py-2 text-xs sm:text-sm font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 sm:min-w-[140px] md:min-w-[180px] appearance-none max-w-[160px] sm:max-w-none"
                 aria-label="Select district"
               >
                 <option value="" className="text-[var(--uris-bg-header)] bg-white">Select district</option>
@@ -375,32 +377,58 @@ export default function App() {
                   <option key={d.id} value={d.id} className="text-[var(--uris-bg-header)] bg-white">{d.name}</option>
                 ))}
               </select>
-              <ChevronDown size={18} className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-white/80" />
+              <ChevronDown size={16} className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-white/80 sm:w-[18px] sm:h-[18px]" />
             </div>
           </div>
         </div>
-        <nav className="flex items-center gap-0.5 bg-white/5 p-0.5 rounded-lg">
-          <button onClick={() => setView('map')} className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${view === 'map' ? 'bg-white text-[var(--uris-bg-header)]' : 'text-white/70 hover:text-white hover:bg-white/5'}`}>Risk Map</button>
-          <button onClick={() => setView('twin')} className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${view === 'twin' ? 'bg-white text-[var(--uris-bg-header)]' : 'text-white/70 hover:text-white hover:bg-white/5'}`}>Digital Twin</button>
+        <nav className="flex items-center gap-0.5 bg-white/5 p-0.5 rounded-lg shrink-0" aria-label="View toggle">
+          <button onClick={() => setView('map')} className={`px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all touch-manipulation ${view === 'map' ? 'bg-white text-[var(--uris-bg-header)]' : 'text-white/70 hover:text-white hover:bg-white/5'}`}>Risk Map</button>
+          <button onClick={() => setView('twin')} className={`px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all touch-manipulation ${view === 'twin' ? 'bg-white text-[var(--uris-bg-header)]' : 'text-white/70 hover:text-white hover:bg-white/5'}`}>Digital Twin</button>
         </nav>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--uris-risk-high-bg)] border border-red-200/50">
-            <ShieldAlert size={14} className="text-[var(--uris-risk-high)]" />
-            <span className="text-xs font-bold uppercase tracking-wider text-[var(--uris-risk-high)]">{alerts.length} Active Alerts</span>
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-lg bg-[var(--uris-risk-high-bg)] border border-red-200/50">
+            <ShieldAlert size={14} className="text-[var(--uris-risk-high)] shrink-0" />
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[var(--uris-risk-high)]">{alerts.length} Active Alerts</span>
           </div>
-          <button className="p-2 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-colors"><Info size={20} /></button>
+          <button type="button" onClick={() => setIsVitalsOpen(true)} className="xl:hidden p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/5 transition-colors touch-manipulation" aria-label="Open District Vitals">
+            <PanelRightClose size={20} />
+          </button>
+          <button type="button" className="p-2 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-colors touch-manipulation" aria-label="Info"><Info size={20} /></button>
         </div>
       </header>
 
-      <main className="flex-1 flex overflow-hidden relative">
-        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="lg:hidden absolute bottom-6 left-6 z-50 w-12 h-12 bg-[var(--uris-bg-header)] text-white rounded-full flex items-center justify-center shadow-lg">
-          <Layers size={20} />
+      <main className="flex-1 flex overflow-hidden relative min-h-0 min-w-0">
+        {/* Backdrop when sidebar drawer is open (mobile/tablet) */}
+        <div
+          aria-hidden
+          onClick={() => setIsSidebarOpen(false)}
+          className={`lg:hidden fixed inset-0 z-30 bg-black/50 transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+        />
+
+        <button
+          onClick={() => setIsSidebarOpen(true)}
+          className="lg:hidden fixed bottom-5 left-4 z-20 w-14 h-14 bg-[var(--uris-bg-header)] text-white rounded-full flex items-center justify-center shadow-lg touch-manipulation"
+          aria-label="Open districts sidebar"
+        >
+          <Layers size={22} />
         </button>
 
-        <aside className={`${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:relative z-40 w-80 h-[calc(100vh-3.5rem)] border-r border-[var(--uris-border)] bg-white flex flex-col shrink-0 transition-transform duration-300 ease-out`}>
-          <div className="p-4 border-b border-[var(--uris-border)]">
-            <h2 className="text-[11px] font-bold text-[var(--uris-text-muted)] uppercase tracking-widest mb-3">{selectedCity?.name ?? 'City'} Districts</h2>
-            <div className="space-y-2">
+        <aside
+          className={`${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:relative z-40 w-[min(100vw-3rem,320px)] lg:w-80 h-[calc(100vh-3.5rem)] lg:h-[calc(100vh-3.5rem)] top-14 left-0 lg:top-auto lg:left-auto border-r border-[var(--uris-border)] bg-white flex flex-col shrink-0 transition-transform duration-300 ease-out shadow-xl lg:shadow-none`}
+        >
+          <div className="shrink-0 flex items-center justify-between gap-2 p-3 border-b border-[var(--uris-border)] lg:py-4 lg:px-4">
+            <h2 className="text-[11px] font-bold text-[var(--uris-text-muted)] uppercase tracking-widest">{selectedCity?.name ?? 'City'} Districts</h2>
+            <button
+              type="button"
+              onClick={() => setIsSidebarOpen(false)}
+              className="lg:hidden p-2 rounded-lg text-[var(--uris-text-muted)] hover:bg-[var(--uris-bg-muted)] hover:text-[var(--uris-text-primary)] touch-manipulation"
+              aria-label="Close sidebar"
+            >
+              <ChevronRight className="rotate-180" size={20} />
+            </button>
+          </div>
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4">
+            <div className="space-y-2 mb-6">
               {currentDistricts.map((d, i) => {
                 const risk = parseFloat(d.overallRisk) || 0;
                 const riskPct = Math.min(100, Math.max(0, (risk / 10) * 100));
@@ -410,8 +438,11 @@ export default function App() {
                     key={d.id}
                     initial={{ opacity: 0, x: -8 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.03 }}
-                    onClick={() => handleDistrictSelect(d)}
+                    transition={{ delay: Math.min(i * 0.03, 0.3) }}
+                    onClick={() => {
+                      handleDistrictSelect(d);
+                      setIsSidebarOpen(false);
+                    }}
                     className={`w-full text-left p-3.5 rounded-[var(--uris-radius-lg)] transition-all duration-200 border ${isSelected ? 'bg-[var(--uris-bg-header)] border-[var(--uris-bg-header)] text-white shadow-md ring-1 ring-black/5' : 'bg-white border-[var(--uris-border)] hover:border-[var(--uris-text-muted)] hover:shadow-sm text-[var(--uris-text-secondary)]'}`}
                   >
                     <div className="flex justify-between items-center gap-2 mb-2">
@@ -437,8 +468,6 @@ export default function App() {
                 );
               })}
             </div>
-          </div>
-          <div className="flex-1 overflow-y-auto p-4">
             <h2 className="text-[11px] font-bold text-[var(--uris-text-muted)] uppercase tracking-widest mb-3">System Alerts</h2>
             <div className="space-y-2">
               {alerts.map(alert => (
@@ -454,8 +483,8 @@ export default function App() {
           </div>
         </aside>
 
-        <section className="flex-1 flex flex-col overflow-hidden relative">
-          <div className="flex-1 relative bg-[var(--uris-bg-muted)]">
+        <section className="flex-1 flex flex-col min-w-0 relative overflow-y-auto md:overflow-hidden min-h-0">
+          <div className="flex-1 relative bg-[var(--uris-bg-muted)] min-h-[240px] md:min-h-0">
             <AnimatePresence mode="wait">
               {view === 'map' ? (
                 <motion.div 
@@ -607,8 +636,8 @@ export default function App() {
             </div>
           </div>
 
-          <div className="h-1/3 border-t border-[var(--uris-border)] bg-white flex overflow-hidden shrink-0">
-            <div className="w-1/2 border-r border-[var(--uris-border)] p-6 overflow-y-auto">
+          <div className="min-h-[200px] md:min-h-0 md:h-1/3 border-t border-[var(--uris-border)] bg-white flex flex-col md:flex-row overflow-hidden shrink-0">
+            <div className="w-full md:w-1/2 md:border-r border-[var(--uris-border)] p-4 sm:p-6 overflow-y-auto min-h-0 shrink-0 md:shrink">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-sm font-bold text-[var(--uris-text-primary)] flex items-center gap-2">
                   <Zap size={16} className="text-[var(--uris-accent)]" />
@@ -675,14 +704,14 @@ export default function App() {
                 </div>
               )}
             </div>
-            <div className="w-1/2 p-6">
-              <div className="flex justify-between items-center mb-4">
+            <div className="w-full md:w-1/2 p-4 sm:p-6 min-h-[180px] md:min-h-0 md:h-auto flex flex-col border-t md:border-t-0 border-[var(--uris-border)]">
+              <div className="flex justify-between items-center mb-2 sm:mb-4">
                 <h2 className="text-sm font-bold text-[var(--uris-text-primary)] flex items-center gap-2">
                   <TrendingUp size={16} className="text-[var(--uris-accent)]" />
                   Risk Trend
                 </h2>
               </div>
-              <div className="h-40">
+              <div className="h-36 sm:h-40 flex-1 min-h-[140px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={trendData.length > 0 ? trendData : DEFAULT_TREND_DATA}>
                     <defs>
@@ -814,6 +843,146 @@ export default function App() {
             </p>
           </div>
         </aside>
+
+        {/* District Vitals drawer (tablet/mobile) */}
+        <AnimatePresence>
+          {isVitalsOpen && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[60] bg-black/40 xl:hidden"
+                onClick={() => setIsVitalsOpen(false)}
+                aria-hidden
+              />
+              <motion.aside
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '100%' }}
+                transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+                className="fixed top-0 right-0 bottom-0 z-[70] w-full max-w-sm bg-white border-l border-[var(--uris-border)] shadow-xl xl:hidden flex flex-col overflow-hidden"
+              >
+                <div className="p-4 border-b border-[var(--uris-border)] flex items-center justify-between shrink-0">
+                  <h2 className="text-sm font-bold text-[var(--uris-text-primary)]">District Vitals</h2>
+                  <button type="button" onClick={() => setIsVitalsOpen(false)} className="p-2 rounded-lg text-[var(--uris-text-muted)] hover:text-[var(--uris-text-primary)] hover:bg-[var(--uris-bg-muted)] transition-colors touch-manipulation" aria-label="Close">
+                    <ChevronRight className="rotate-180" size={20} />
+                  </button>
+                </div>
+                <div className="p-4 overflow-y-auto flex-1 min-h-0">
+                  <div className="space-y-3 mb-6">
+                    <StatCard
+                      title="Infra Stress"
+                      value={selectedDistrict?.scores?.infrastructure != null ? `${Math.round(selectedDistrict.scores.infrastructure * 10)}%` : '—'}
+                      icon={Droplets}
+                      trend={12}
+                      accentColor="#0d9488"
+                      valuePct={selectedDistrict?.scores?.infrastructure != null ? selectedDistrict.scores.infrastructure * 10 : undefined}
+                    />
+                    <StatCard
+                      title="Mobility Index"
+                      value={selectedDistrict?.scores?.mobility != null ? `${Math.round(selectedDistrict.scores.mobility * 10)}%` : '—'}
+                      icon={Car}
+                      trend={-5}
+                      accentColor="#d97706"
+                      valuePct={selectedDistrict?.scores?.mobility != null ? selectedDistrict.scores.mobility * 10 : undefined}
+                    />
+                    <StatCard
+                      title="Economic Activity"
+                      value={selectedDistrict?.scores?.job_postings ?? '—'}
+                      icon={TrendingUp}
+                      trend={8}
+                      accentColor="#059669"
+                    />
+                  </div>
+                  <h2 className="text-[11px] font-bold text-[var(--uris-text-muted)] uppercase tracking-widest mb-3">Interventions</h2>
+                  <div className="mb-6">
+                    <button onClick={() => { setShowSimulator(true); setIsVitalsOpen(false); }} className="w-full flex items-center justify-between p-3 rounded-[var(--uris-radius-lg)] bg-[var(--uris-accent)] hover:bg-[var(--uris-accent-hover)] text-white transition-colors font-semibold touch-manipulation">
+                      <div className="flex items-center gap-3">
+                        <Zap size={14} />
+                        <span className="text-xs">Run Simulator</span>
+                      </div>
+                      <ChevronRight size={14} />
+                    </button>
+                  </div>
+                  <div className="flex justify-between items-center mb-3">
+                    <h2 className="text-[11px] font-bold text-[var(--uris-text-muted)] uppercase tracking-widest">Live Signals</h2>
+                    <div className="flex items-center gap-2">
+                      {liveSignals?.lastUpdated != null && (
+                        <span className="text-[9px] text-[var(--uris-text-muted)]">{formatLastUpdated(liveSignals.lastUpdated)}</span>
+                      )}
+                      <button onClick={refreshLiveSignals} disabled={liveSignalsLoading} className="text-[10px] font-bold text-[var(--uris-accent)] hover:text-[var(--uris-accent-hover)] uppercase tracking-widest flex items-center gap-1 disabled:opacity-50">
+                        {liveSignalsLoading ? "…" : <><Zap size={10} /> Refresh</>}
+                      </button>
+                    </div>
+                  </div>
+                  {liveSignalsError && (
+                    <div className="mb-3 p-2 rounded-md bg-[var(--uris-risk-high-bg)] border border-[var(--uris-risk-high)]/30 flex items-center justify-between gap-2">
+                      <span className="text-[10px] text-[var(--uris-risk-high)]">{liveSignalsError}</span>
+                      <button onClick={refreshLiveSignals} className="text-[10px] font-bold text-[var(--uris-risk-high)] hover:underline">Retry</button>
+                    </div>
+                  )}
+                  <div className="space-y-3">
+                    {liveSignals?.news && (
+                      <div className="p-3 rounded-[var(--uris-radius-md)] border border-[var(--uris-border)] bg-[var(--uris-bg-muted)]">
+                        <div className="flex items-center gap-2 mb-2">
+                          <FileText size={14} className="text-[var(--uris-accent)]" />
+                          <span className="text-[10px] font-bold uppercase text-[var(--uris-text-muted)]">News</span>
+                        </div>
+                        <div className="space-y-2">
+                          {liveSignals.news.slice(0, 2).map((n, i) => (
+                            <div key={i} className="text-[11px] leading-tight">
+                              <div className="font-semibold text-[var(--uris-text-primary)]">{n.title}</div>
+                              <div className="text-[9px] text-[var(--uris-text-muted)] mt-0.5">{n.source} · {n.sentiment}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {liveSignals?.jobs && (
+                      <div className="p-3 rounded-[var(--uris-radius-md)] border border-[var(--uris-border)] bg-[var(--uris-bg-muted)]">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Activity size={14} className="text-[var(--uris-risk-low)]" />
+                          <span className="text-[10px] font-bold uppercase text-[var(--uris-text-muted)]">Jobs</span>
+                        </div>
+                        <div className="space-y-2">
+                          {liveSignals.jobs.slice(0, 2).map((j, i) => (
+                            <div key={i} className="text-[11px] leading-tight">
+                              <div className="font-semibold text-[var(--uris-text-primary)]">{j.title}</div>
+                              <div className="text-[9px] text-[var(--uris-text-muted)] mt-0.5">{j.company} · {j.location}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {liveSignals?.property && (
+                      <div className="p-3 rounded-[var(--uris-radius-md)] border border-[var(--uris-border)] bg-[var(--uris-bg-muted)]">
+                        <div className="flex items-center gap-2 mb-2">
+                          <TrendingUp size={14} className="text-[var(--uris-risk-medium)]" />
+                          <span className="text-[10px] font-bold uppercase text-[var(--uris-text-muted)]">Property</span>
+                        </div>
+                        <div className="space-y-2">
+                          {liveSignals.property.slice(0, 2).map((p, i) => (
+                            <div key={i} className="text-[11px] leading-tight">
+                              <div className="font-semibold text-[var(--uris-text-primary)]">{p.address}</div>
+                              <div className="text-[9px] text-[var(--uris-text-muted)] mt-0.5">{p.price} · {p.trend}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-6 p-4 rounded-[var(--uris-radius-lg)] bg-[var(--uris-accent-muted)] border border-[var(--uris-accent)]/20">
+                    <h3 className="text-[11px] font-bold text-[var(--uris-accent-hover)] uppercase tracking-wider mb-2">Resilience Tip</h3>
+                    <p className="text-[11px] text-[var(--uris-text-secondary)] leading-relaxed">
+                      Early warning signals suggest a 15% increase in infrastructure stress in Korangi. Proactive maintenance could reduce cascading traffic losses.
+                    </p>
+                  </div>
+                </div>
+              </motion.aside>
+            </>
+          )}
+        </AnimatePresence>
       </main>
 
         {/* Cascading Simulator Modal */}
@@ -823,14 +992,14 @@ export default function App() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[100] bg-[var(--uris-bg-header)]/80 backdrop-blur-md flex items-center justify-center p-6"
+              className="fixed inset-0 z-[100] bg-[var(--uris-bg-header)]/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto"
             >
               <motion.div
                 initial={{ opacity: 0, scale: 0.96, y: 12 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.96, y: 12 }}
                 transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-                className="bg-[var(--uris-bg-surface)] w-full max-w-2xl rounded-[var(--uris-radius-xl)] overflow-hidden flex flex-col border border-[var(--uris-border)]"
+                className="bg-[var(--uris-bg-surface)] w-full max-w-2xl rounded-[var(--uris-radius-xl)] overflow-hidden flex flex-col border border-[var(--uris-border)] my-auto max-h-[90vh]"
                 style={{ boxShadow: 'var(--uris-shadow-lg)' }}
               >
                 <div className="p-5 border-b border-[var(--uris-border)] flex justify-between items-center bg-[var(--uris-bg-muted)]">
@@ -848,7 +1017,7 @@ export default function App() {
                   </button>
                 </div>
 
-                <div className="p-6 flex-1">
+                <div className="p-4 sm:p-6 flex-1 overflow-y-auto min-h-0">
                   {!simResult && !simulating ? (
                     <div className="text-center py-10">
                       <div className="w-16 h-16 rounded-full bg-[var(--uris-accent-muted)] flex items-center justify-center mx-auto mb-5">
