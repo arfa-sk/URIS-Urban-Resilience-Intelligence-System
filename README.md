@@ -46,6 +46,35 @@ A dashboard for monitoring urban resilience across Pakistani cities (Karachi, La
 | `npm run clean`  | Remove `dist/` (Windows-friendly) |
 | `npm run lint`   | TypeScript check           |
 
+## Deploying
+
+The app needs the **Express backend** running so `/api/*` routes work. Two options:
+
+**Option A — Single host (recommended)**  
+Deploy the full app to a Node host (e.g. [Railway](https://railway.app), [Render](https://render.com), [Fly.io](https://fly.io)):
+
+1. Build: `npm run build`
+2. Set env (e.g. `GEMINI_API_KEY`, `PORT`).
+3. Start the server: `NODE_ENV=production node server.ts` (or `npx tsx server.ts`). The server serves `dist/` in production, so ensure `dist` exists from step 1.
+
+**Option B — Frontend and backend separately**  
+If the frontend is on static hosting (e.g. Vercel, Netlify) and the backend on another URL:
+
+1. Deploy the backend (e.g. Railway) and note its URL (e.g. `https://your-app.railway.app`).
+2. In the frontend build, set **`VITE_API_URL`** to that URL (no trailing slash). Example: `VITE_API_URL=https://your-app.railway.app`.
+3. Rebuild and deploy the frontend. All API calls will go to `VITE_API_URL`.
+
+If you only deploy the static build (e.g. Vite build) without a backend, API calls will fail and you’ll see errors like “Failed to fetch live signals”.
+
+**Option C — Deploy the whole project on Vercel**  
+This repo is set up so the **frontend and API** run on Vercel together (no separate backend):
+
+1. Push the repo to GitHub and [import it in Vercel](https://vercel.com/new).
+2. Set **Environment Variables** in the Vercel project (e.g. `GEMINI_API_KEY`, optionally `BRIGHT_DATA_API_KEY`). Do **not** set `VITE_API_URL` — the app uses the same origin for API calls.
+3. Deploy. Vercel will run `npm run build` (Vite build → `dist/`), and all `/api/*` requests will be handled by the Express app as a serverless function.
+
+Local preview with Vercel’s routing: `npx vercel dev` (install [Vercel CLI](https://vercel.com/docs/cli) if needed).
+
 ## API overview
 
 - `GET /api/health` — Health check

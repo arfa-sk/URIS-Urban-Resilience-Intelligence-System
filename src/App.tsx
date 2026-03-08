@@ -242,7 +242,10 @@ export default function App() {
     setLiveSignalsError(null);
     getLiveSignals(selectedCityId)
       .then((s) => setLiveSignals(s))
-      .catch((e) => setLiveSignalsError(e instanceof Error ? e.message : "Live signals unavailable"));
+      .catch((e) => {
+        const msg = e instanceof Error ? e.message : "Live signals unavailable";
+        setLiveSignalsError(msg.includes("fetch") || msg.includes("Failed") ? "Live signals unavailable. Ensure the backend is deployed and reachable." : msg);
+      });
     getAlerts(selectedCityId)
       .then((a) => setAlerts(a))
       .catch(() => setAlerts([]));

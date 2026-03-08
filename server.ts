@@ -7,7 +7,6 @@ dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
 dotenv.config({ path: path.resolve(process.cwd(), ".envlocal") });
 
 import express from "express";
-import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import type { Signals, AnalysisResult, SimulatorStep } from "./src/types";
 
@@ -696,10 +695,11 @@ app.post("/api/simulate", async (req, res) => {
   }
 });
 
-// --- VITE MIDDLEWARE ---
+// --- VITE / STATIC (skip on Vercel; API is served by serverless) ---
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({
+    const { createServer } = await import("vite");
+    const vite = await createServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
@@ -715,4 +715,8 @@ async function startServer() {
   });
 }
 
-startServer();
+if (process.env.VERCEL !== "1") {
+  startServer();
+}
+
+export default app;

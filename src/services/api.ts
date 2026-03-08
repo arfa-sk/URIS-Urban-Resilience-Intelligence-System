@@ -9,8 +9,10 @@ import type {
   TrendResponse,
 } from "../types";
 
+const API_BASE = (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) || "";
+
 export async function getCities(): Promise<City[]> {
-  const response = await fetch("/api/cities");
+  const response = await fetch(`${API_BASE}/api/cities`);
   if (!response.ok) throw new Error("Failed to fetch cities");
   return response.json();
 }
@@ -41,7 +43,7 @@ export async function getAIAnalysis(
   district: string,
   signals: Signals
 ): Promise<AnalysisResult> {
-  const response = await fetch("/api/analysis", {
+  const response = await fetch(`${API_BASE}/api/analysis`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ district, signals }),
@@ -55,7 +57,7 @@ export async function getAIAnalysis(
 
 export async function getAlerts(cityId: string): Promise<Alert[]> {
   const normalized = cityId.trim().toLowerCase();
-  const response = await fetch(`/api/alerts?city=${encodeURIComponent(normalized)}`, {
+  const response = await fetch(`${API_BASE}/api/alerts?city=${encodeURIComponent(normalized)}`, {
     cache: "no-store",
     headers: { Pragma: "no-cache" },
   });
@@ -65,7 +67,7 @@ export async function getAlerts(cityId: string): Promise<Alert[]> {
 
 export async function getLiveSignals(cityId: string): Promise<LiveSignals> {
   const normalized = cityId.trim().toLowerCase();
-  const response = await fetch(`/api/signals/live?city=${encodeURIComponent(normalized)}`, {
+  const response = await fetch(`${API_BASE}/api/signals/live?city=${encodeURIComponent(normalized)}`, {
     cache: "no-store",
     headers: { Pragma: "no-cache" },
   });
@@ -74,7 +76,7 @@ export async function getLiveSignals(cityId: string): Promise<LiveSignals> {
 }
 
 export async function getTrend(districtId: string): Promise<TrendResponse> {
-  const response = await fetch(`/api/trend/${encodeURIComponent(districtId)}`);
+  const response = await fetch(`${API_BASE}/api/trend/${encodeURIComponent(districtId)}`);
   if (!response.ok) throw new Error("Failed to fetch trend");
   return response.json();
 }
@@ -83,7 +85,7 @@ export async function simulateCascade(
   district: string,
   signals: Signals
 ): Promise<SimulateResponse> {
-  const response = await fetch("/api/simulate", {
+  const response = await fetch(`${API_BASE}/api/simulate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ district, signals }),
