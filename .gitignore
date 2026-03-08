@@ -9,4 +9,4 @@ coverage/
 .env
 .env.local
 .envlocal
-!.env.example
+.env.example
