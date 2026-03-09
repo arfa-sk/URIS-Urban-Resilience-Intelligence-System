@@ -407,7 +407,7 @@ export default function App() {
 
         <button
           onClick={() => setIsSidebarOpen(true)}
-          className="lg:hidden fixed bottom-5 left-4 z-20 w-14 h-14 bg-[var(--uris-bg-header)] text-white rounded-full flex items-center justify-center shadow-lg touch-manipulation"
+          className="lg:hidden fixed bottom-5 right-4 z-20 w-14 h-14 bg-[var(--uris-bg-header)] text-white rounded-full flex items-center justify-center shadow-lg touch-manipulation"
           aria-label="Open districts sidebar"
         >
           <Layers size={22} />
@@ -483,8 +483,8 @@ export default function App() {
           </div>
         </aside>
 
-        <section className="flex-1 flex flex-col min-w-0 relative overflow-y-auto md:overflow-hidden min-h-0">
-          <div className="flex-1 relative bg-[var(--uris-bg-muted)] min-h-[240px] md:min-h-0">
+        <section className="flex-1 flex flex-col min-w-0 relative overflow-y-auto md:overflow-hidden min-h-0 pb-24 md:pb-0">
+          <div className={`relative bg-[var(--uris-bg-muted)] min-h-[240px] ${view === 'map' ? 'flex-1 md:min-h-0' : ''} ${view === 'twin' ? 'md:flex-1 md:min-h-0' : ''}`}>
             <AnimatePresence mode="wait">
               {view === 'map' ? (
                 <motion.div 
@@ -531,10 +531,10 @@ export default function App() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="absolute inset-0 bg-[var(--uris-bg-muted)] flex flex-col overflow-hidden"
+                  className="relative md:absolute md:inset-0 bg-[var(--uris-bg-muted)] flex flex-col overflow-visible md:overflow-hidden min-h-0"
                 >
                   {/* Header: title (city/district changed via global header) */}
-                  <div className="shrink-0 px-6 py-4 border-b border-[var(--uris-border)] bg-white flex flex-wrap items-center gap-4">
+                  <div className="shrink-0 px-4 sm:px-6 py-4 border-b border-[var(--uris-border)] bg-white flex flex-wrap items-center gap-4">
                     <div className="flex items-center gap-3">
                       <div className="px-2.5 py-1 bg-[var(--uris-accent)]/15 text-[var(--uris-accent)] rounded-md text-[10px] font-bold uppercase tracking-widest border border-[var(--uris-accent)]/30">
                         Digital Twin
@@ -547,8 +547,8 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Main content: system cards + context */}
-                  <div className="flex-1 overflow-y-auto p-6">
+                  {/* Main content: system cards + context. On mobile no inner scroll — one page scroll. */}
+                  <div className="min-h-0 p-4 sm:p-6 md:flex-1 md:overflow-y-auto md:min-h-0">
                     {selectedDistrict ? (
                       <div className="max-w-4xl mx-auto space-y-6">
                         <div className="flex items-center gap-2 text-[var(--uris-text-muted)] text-sm">
@@ -618,6 +618,94 @@ export default function App() {
                             })()}
                           </p>
                         </div>
+
+                        {/* Mobile-only: AI Intelligence + Risk Trend in same scroll column (no separate panel) */}
+                        <div className="md:hidden space-y-0 pt-2 border-t border-[var(--uris-border)]">
+                          <div className="py-4 border-b border-[var(--uris-border)]">
+                            <h2 className="text-sm font-bold text-[var(--uris-text-primary)] flex items-center gap-2 mb-4">
+                              <Zap size={16} className="text-[var(--uris-accent)]" />
+                              AI Intelligence: {selectedDistrict?.name ?? 'District'}
+                            </h2>
+                            {analyzing && <span className="text-[10px] font-bold text-[var(--uris-accent)] animate-pulse uppercase tracking-widest">Analyzing…</span>}
+                            {analysis?.is_fallback && (
+                              <div className="mb-4 p-2.5 rounded-lg bg-[var(--uris-accent-muted)] border border-[var(--uris-accent)]/20 flex items-center gap-2">
+                                <Info size={12} className="text-[var(--uris-accent)] shrink-0" />
+                                <p className="text-[10px] text-[var(--uris-accent-hover)] font-bold uppercase tracking-wider">Heuristic mode</p>
+                              </div>
+                            )}
+                            {analysisError ? (
+                              <div className="flex flex-col items-center justify-center text-[var(--uris-risk-high)] gap-3 py-4">
+                                <AlertTriangle size={28} />
+                                <p className="text-xs text-center">{analysisError}</p>
+                                <button onClick={retryAnalysis} className="px-3 py-1.5 rounded-md bg-[var(--uris-accent)] text-white text-xs font-semibold hover:opacity-90">Retry</button>
+                              </div>
+                            ) : !analysis && !analyzing ? (
+                              <div className="flex flex-col items-center justify-center text-[var(--uris-text-muted)] gap-2 py-4">
+                                <Activity size={32} strokeWidth={1} />
+                                <p className="text-xs">Select a district to generate AI insights</p>
+                              </div>
+                            ) : (
+                              <div className="space-y-4">
+                                <div className="p-4 rounded-[var(--uris-radius-lg)] border border-[var(--uris-border)] bg-[var(--uris-bg-muted)]">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <RiskBadge score={parseFloat(selectedDistrict?.overallRisk || '0')} />
+                                    <span className="text-[11px] font-bold text-[var(--uris-text-muted)] uppercase tracking-wider">Risk Level</span>
+                                  </div>
+                                  <div className="text-sm text-[var(--uris-text-secondary)] leading-relaxed prose prose-sm max-w-none [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-4">
+                                    {analysis?.explanation ? <Markdown>{analysis.explanation}</Markdown> : <p>Awaiting AI reasoning…</p>}
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <h3 className="text-[10px] font-bold text-[var(--uris-text-muted)] uppercase tracking-widest mb-2">Root Causes</h3>
+                                    <ul className="space-y-1.5">
+                                      {analysis?.root_causes?.map((cause: string, i: number) => (
+                                        <li key={i} className="text-xs text-[var(--uris-text-secondary)] flex items-start gap-2">
+                                          <span className="w-1 h-1 bg-[var(--uris-text-muted)] rounded-full mt-1.5 shrink-0" />
+                                          {cause}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                  <div>
+                                    <h3 className="text-[10px] font-bold text-[var(--uris-text-muted)] uppercase tracking-widest mb-2">Recommendations</h3>
+                                    <ul className="space-y-1.5">
+                                      {analysis?.recommendations?.map((rec: string, i: number) => (
+                                        <li key={i} className="text-xs text-[var(--uris-text-secondary)] flex items-start gap-2">
+                                          <span className="w-1 h-1 bg-[var(--uris-accent)] rounded-full mt-1.5 shrink-0" />
+                                          {rec}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          <div className="py-4">
+                            <h2 className="text-sm font-bold text-[var(--uris-text-primary)] flex items-center gap-2 mb-4">
+                              <TrendingUp size={16} className="text-[var(--uris-accent)]" />
+                              Risk Trend
+                            </h2>
+                            <div className="h-44">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={trendData.length > 0 ? trendData : DEFAULT_TREND_DATA}>
+                                  <defs>
+                                    <linearGradient id="colorRiskMobile" x1="0" y1="0" x2="0" y2="1">
+                                      <stop offset="5%" stopColor="var(--uris-chart-stroke)" stopOpacity={0.15} />
+                                      <stop offset="95%" stopColor="var(--uris-chart-stroke)" stopOpacity={0} />
+                                    </linearGradient>
+                                  </defs>
+                                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--uris-border-subtle)" />
+                                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--uris-text-muted)' }} />
+                                  <YAxis hide domain={[0, 10]} />
+                                  <Tooltip contentStyle={{ borderRadius: 'var(--uris-radius)', border: '1px solid var(--uris-border)', fontSize: '12px' }} />
+                                  <Area type="monotone" dataKey="risk" stroke="var(--uris-chart-stroke)" strokeWidth={2} fillOpacity={1} fill="url(#colorRiskMobile)" />
+                                </AreaChart>
+                              </ResponsiveContainer>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     ) : (
                       <div className="flex flex-col items-center justify-center h-full text-[var(--uris-text-muted)] gap-2">
@@ -636,12 +724,12 @@ export default function App() {
             </div>
           </div>
 
-          <div className="min-h-[200px] md:min-h-0 md:h-1/3 border-t border-[var(--uris-border)] bg-white flex flex-col md:flex-row overflow-hidden shrink-0">
-            <div className="w-full md:w-1/2 md:border-r border-[var(--uris-border)] p-4 sm:p-6 overflow-y-auto min-h-0 shrink-0 md:shrink">
+          <div className={`border-t border-[var(--uris-border)] bg-white flex flex-col md:flex-row overflow-visible md:overflow-hidden shrink-0 min-h-0 md:h-1/3 ${view === 'twin' ? 'hidden md:flex' : 'flex'}`}>
+            <div className="w-full md:w-1/2 md:border-r border-[var(--uris-border)] p-4 sm:p-6 overflow-visible md:overflow-y-auto min-h-0 shrink-0 md:shrink order-1 min-h-[200px] md:min-h-0">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-sm font-bold text-[var(--uris-text-primary)] flex items-center gap-2">
                   <Zap size={16} className="text-[var(--uris-accent)]" />
-                  AI Intelligence: {selectedDistrict?.name}
+                  AI Intelligence: {selectedDistrict?.name ?? 'District'}
                 </h2>
                 {analyzing && <span className="text-[10px] font-bold text-[var(--uris-accent)] animate-pulse uppercase tracking-widest">Analyzing…</span>}
               </div>
@@ -704,7 +792,7 @@ export default function App() {
                 </div>
               )}
             </div>
-            <div className="w-full md:w-1/2 p-4 sm:p-6 min-h-[180px] md:min-h-0 md:h-auto flex flex-col border-t md:border-t-0 border-[var(--uris-border)]">
+            <div className="w-full md:w-1/2 p-4 sm:p-6 min-h-[180px] md:min-h-0 md:h-auto flex flex-col border-t md:border-t-0 border-[var(--uris-border)] order-2">
               <div className="flex justify-between items-center mb-2 sm:mb-4">
                 <h2 className="text-sm font-bold text-[var(--uris-text-primary)] flex items-center gap-2">
                   <TrendingUp size={16} className="text-[var(--uris-accent)]" />
